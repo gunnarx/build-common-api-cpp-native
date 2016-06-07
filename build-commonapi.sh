@@ -53,7 +53,7 @@ done
 }
 
 install_prerequisites() {
-  sudo yum install expat-devel cmake gcc g++ autotools
+  sudo yum install expat-devel cmake gcc gcc-c++ automake autoconf
 }
 
 apply_patch() {
