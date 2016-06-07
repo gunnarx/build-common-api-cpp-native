@@ -98,9 +98,12 @@ install_prerequisites() {
 
   echo dnf $dnf yum $yum apt $apt
 
-  $dnf && sudo dnf install expat-devel cmake gcc gcc-c++ automake autoconf
-  $yum && sudo yum install expat-devel cmake gcc gcc-c++ automake autoconf
-  $apt && sudo apt install git make libexpat1-dev cmake gcc g++ automake autoconf
+  if [ ! -f .installed_packages ] ; then
+    $dnf && sudo dnf install expat-devel cmake gcc gcc-c++ automake autoconf
+    $yum && sudo yum install expat-devel cmake gcc gcc-c++ automake autoconf
+    $apt && sudo apt install git make libexpat1-dev cmake gcc g++ automake autoconf
+  fi
+  touch .installed_packages
 }
 
 apply_patch() {
