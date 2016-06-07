@@ -18,6 +18,10 @@
 # According to web page:
 # "Valid for CommonAPI 3.1.3 and vsomeip 1.3.0"
 
+# SETTINGS
+MINORVERSION=3.1
+PATCHVERSION=3.1.5p2
+
 # Get absolute path to base dir
 MYDIR=$(dirname "$0")
 cd "$MYDIR"
@@ -111,8 +115,8 @@ cp "$BASEDIR/examples/HelloWorld.fidl" fidl/
 cd "$BASEDIR/project" || fail
 mkdir -p cgen
 cd cgen/ || fail
-try wget http://docs.projects.genivi.org/yamaica-update-site/CommonAPI/generator/3.1/3.1.3/commonapi-generator.zip
-try wget http://docs.projects.genivi.org/yamaica-update-site/CommonAPI/generator/3.1/3.1.3/commonapi_dbus_generator.zip
+try wget -c http://docs.projects.genivi.org/yamaica-update-site/CommonAPI/generator/$MINORVERSION/$PATCHVERSION/commonapi-generator.zip
+try wget -c http://docs.projects.genivi.org/yamaica-update-site/CommonAPI/generator/$MINORVERSION/$PATCHVERSION/commonapi_dbus_generator.zip
 try unzip commonapi-generator.zip -d commonapi-generator
 try unzip commonapi_dbus_generator.zip -d commonapi_dbus_generator
 try chmod +x ./commonapi-generator/commonapi-generator-linux-x86
