@@ -22,17 +22,17 @@ link_directories(
  
 add_executable(HelloWorldClient
     src/HelloWorldClient.cpp
-    src-gen/v1_0/commonapi/HelloWorldDBusProxy.cpp
-    src-gen/v1_0/commonapi/HelloWorldDBusDeployment.cpp
+    src-gen/v1/commonapi/HelloWorldDBusProxy.cpp
+    src-gen/v1/commonapi/HelloWorldDBusDeployment.cpp
 )
 target_link_libraries(HelloWorldClient CommonAPI CommonAPI-DBus dbus-1)
  
 add_executable(HelloWorldService
     src/HelloWorldService.cpp
     src/HelloWorldStubImpl.cpp
-    src-gen/v1_0/commonapi/HelloWorldDBusStubAdapter.cpp
-    src-gen/v1_0/commonapi/HelloWorldStubDefault.cpp
-    src-gen/v1_0/commonapi/HelloWorldDBusDeployment.cpp
+    src-gen/v1/commonapi/HelloWorldDBusStubAdapter.cpp
+    src-gen/v1/commonapi/HelloWorldStubDefault.cpp
+    src-gen/v1/commonapi/HelloWorldDBusDeployment.cpp
 )
 target_link_libraries(HelloWorldService CommonAPI CommonAPI-DBus dbus-1)
 

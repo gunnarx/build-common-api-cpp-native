@@ -137,7 +137,23 @@ try chmod +x ./commonapi_dbus_generator/commonapi-dbus-generator-linux-x86
 cd "$BASEDIR/project" || fail
 try ./cgen/commonapi-generator/commonapi-generator-linux-x86 -sk ./fidl/HelloWorld.fidl
 try ./cgen/commonapi_dbus_generator/commonapi-dbus-generator-linux-x86 ./fidl/HelloWorld.fidl
-cd src-gen/v1_0/commonapi || fail
+
+# Dirname for generated filesseems to have changed...
+case $PATCHVERSION in 
+  3.1.3)
+    versiondir=v1_0
+    ;;
+  3.1.5p2)
+    versiondir=v1
+    ;;
+  *)
+    # I am not going to check other versions - you can do it.. ;)
+    echo "UNSUPPORTED, FIX SCRIPT for \$versiondir"
+    exit 1
+    ;;
+esac
+
+cd src-gen/$versiondir/commonapi || fail
 
 check_expected HelloWorldDBusDeployment.cpp HelloWorldDBusProxy.cpp\
       HelloWorldDBusStubAdapter.cpp HelloWorld.hpp HelloWorldProxy.hpp\

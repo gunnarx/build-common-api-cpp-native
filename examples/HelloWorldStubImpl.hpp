@@ -2,9 +2,9 @@
 #define HELLOWORLDSTUBIMPL_H_
 
 #include <CommonAPI/CommonAPI.hpp>
-#include <v1_0/commonapi/HelloWorldStubDefault.hpp>
+#include <v1/commonapi/HelloWorldStubDefault.hpp>
 
-class HelloWorldStubImpl: public v1_0::commonapi::HelloWorldStubDefault {
+class HelloWorldStubImpl: public v1::commonapi::HelloWorldStubDefault {
 public:
     HelloWorldStubImpl();
     virtual ~HelloWorldStubImpl();

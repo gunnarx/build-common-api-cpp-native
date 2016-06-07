@@ -2,9 +2,9 @@
 #include <string>
 #include <unistd.h>
 #include <CommonAPI/CommonAPI.hpp>
-#include <v1_0/commonapi/HelloWorldProxy.hpp>
+#include <v1/commonapi/HelloWorldProxy.hpp>
 
-using namespace v1_0::commonapi;
+using namespace v1::commonapi;
 
 int main() {
     std::shared_ptr < CommonAPI::Runtime > runtime = CommonAPI::Runtime::get();
