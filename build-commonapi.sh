@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/bash -x
 
 # This script is based on the detailed instructions from GENIVI public wiki
 # written by Juergen Gehring.
@@ -21,6 +21,7 @@
 # SETTINGS
 MINORVERSION=3.1
 PATCHVERSION=3.1.5p2
+ARCH=$(uname -m)
 
 # Get absolute path to base dir
 MYDIR=$(dirname "$0")
@@ -56,8 +57,21 @@ for f in $@ ; do
 done
 }
 
+check_os(){
+    result=`lsb_release -i`
+    os=`echo $result |awk -F":" '{print $2}' |tr A-Z a-z`
+    if [[ $os =~ "ubuntu" ]] ; then
+      sudo apt-get install libexpat1-dev cmake gcc g++ automake autoconf
+    elif [[ $os =~ "centos" || $os =~ "redhat" ]] ; then
+      sudo yum install expat-devel cmake gcc gcc-c++ automake autoconf
+    else
+      echo 'Not Known OS. Exiting!'
+      exit 1
+    fi
+}
+
 install_prerequisites() {
-  sudo yum install expat-devel cmake gcc gcc-c++ automake autoconf
+  check_os
 }
 
 apply_patch() {
@@ -119,8 +133,8 @@ try wget -c http://docs.projects.genivi.org/yamaica-update-site/CommonAPI/genera
 try wget -c http://docs.projects.genivi.org/yamaica-update-site/CommonAPI/generator/$MINORVERSION/$PATCHVERSION/commonapi_dbus_generator.zip
 try unzip commonapi-generator.zip -d commonapi-generator
 try unzip commonapi_dbus_generator.zip -d commonapi_dbus_generator
-try chmod +x ./commonapi-generator/commonapi-generator-linux-x86
-try chmod +x ./commonapi_dbus_generator/commonapi-dbus-generator-linux-x86
+try chmod +x ./commonapi-generator/commonapi-generator-linux-$ARCH
+try chmod +x ./commonapi_dbus_generator/commonapi-dbus-generator-linux-$ARCH
 
 # Now you find the executables of the code generators in
 # cgen/commonapi-generator and cgen/commonapi_dbus_generator, respectively.
@@ -135,8 +149,8 @@ try chmod +x ./commonapi_dbus_generator/commonapi-dbus-generator-linux-x86
 #Finally you can generate code (CommonAPI code with the commonapi-generator and CommonAPI D-Bus code with the commonapi-dbus-generator):
 #Generate Code
 cd "$BASEDIR/project" || fail
-try ./cgen/commonapi-generator/commonapi-generator-linux-x86 -sk ./fidl/HelloWorld.fidl
-try ./cgen/commonapi_dbus_generator/commonapi-dbus-generator-linux-x86 ./fidl/HelloWorld.fidl
+try ./cgen/commonapi-generator/commonapi-generator-linux-$ARCH -sk ./fidl/HelloWorld.fidl
+try ./cgen/commonapi_dbus_generator/commonapi-dbus-generator-linux-$ARCH ./fidl/HelloWorld.fidl
 
 # Dirname for generated filesseems to have changed...
 case $PATCHVERSION in 
