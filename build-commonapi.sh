@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/bash -x
 
 # This script is based on the detailed instructions from GENIVI public wiki
 # written by Juergen Gehring.
@@ -56,8 +56,21 @@ for f in $@ ; do
 done
 }
 
+check_os(){
+    result=`lsb_release -i`
+    os=`echo $result |awk -F":" '{print $2}' |tr A-Z a-z`
+    if [[ $os =~ "ubuntu" ]] ; then
+      sudo apt-get install libexpat1-dev cmake gcc g++ automake autoconf
+    elif [[ $os =~ "centos" || $os =~ "redhat" ]] ; then
+      sudo yum install expat-devel cmake gcc gcc-c++ automake autoconf
+    else
+      echo 'Not Known OS. Exiting!'
+      exit 1
+    fi
+}
+
 install_prerequisites() {
-  sudo yum install expat-devel cmake gcc gcc-c++ automake autoconf
+  check_os
 }
 
 apply_patch() {
