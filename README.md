@@ -1,3 +1,10 @@
+# WARNING - 
+**Not yet updated for new GitHub location of Common API, and new pathnames (capicxx-*) !**
+
+(Please fix it and send pull request)
+
+----
+
 A bash script encoding of all the steps in:
 
 "CommonAPI C++ D-Bus in 10 minutes (from scratch)"
