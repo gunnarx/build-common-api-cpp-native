@@ -21,6 +21,7 @@
 # SETTINGS
 MINORVERSION=3.1
 PATCHVERSION=3.1.5p2
+ARCH=$(uname -m)
 
 # Get absolute path to base dir
 MYDIR=$(dirname "$0")
@@ -81,8 +82,8 @@ install_prerequisites
 
 # Build Common API C++ Runtime
 cd "$BASEDIR" || fail
-git_clone http://git.projects.genivi.org/ipc/common-api-runtime.git
-cd common-api-runtime/ || fail
+git_clone https://github.com/GENIVI/capicxx-core-runtime.git
+cd capicxx-core-runtime/ || fail
 mkdir -p build
 cd build/ || fail
 try cmake ..
@@ -91,13 +92,13 @@ check_expected libCommonAPI.so
 
 # Build Common API C++ DBus Runtime
 cd "$BASEDIR" || fail
-git_clone http://git.projects.genivi.org/ipc/common-api-dbus-runtime.git
+git_clone https://github.com/GENIVI/capicxx-dbus-runtime.git
 try wget -c http://dbus.freedesktop.org/releases/dbus/dbus-1.8.20.tar.gz
 try tar -xzf dbus-1.8.20.tar.gz
 cd dbus-1.8.20/ || fail
-apply_patch ../common-api-dbus-runtime/src/dbus-patches/capi-dbus-add-send-with-reply-set-notify.patch
-apply_patch ../common-api-dbus-runtime/src/dbus-patches/capi-dbus-add-support-for-custom-marshalling.patch
-apply_patch ../common-api-dbus-runtime/src/dbus-patches/capi-dbus-correct-dbus-connection-block-pending-call.patch
+apply_patch ../capicxx-dbus-runtime/src/dbus-patches/capi-dbus-add-send-with-reply-set-notify.patch
+apply_patch ../capicxx-dbus-runtime/src/dbus-patches/capi-dbus-add-support-for-custom-marshalling.patch
+apply_patch ../capicxx-dbus-runtime/src/dbus-patches/capi-dbus-correct-dbus-connection-block-pending-call.patch
 try ./configure
 try make -j4
 check_expected dbus/.libs/libdbus-1.so.3
@@ -132,8 +133,8 @@ try wget -c http://docs.projects.genivi.org/yamaica-update-site/CommonAPI/genera
 try wget -c http://docs.projects.genivi.org/yamaica-update-site/CommonAPI/generator/$MINORVERSION/$PATCHVERSION/commonapi_dbus_generator.zip
 try unzip commonapi-generator.zip -d commonapi-generator
 try unzip commonapi_dbus_generator.zip -d commonapi_dbus_generator
-try chmod +x ./commonapi-generator/commonapi-generator-linux-x86
-try chmod +x ./commonapi_dbus_generator/commonapi-dbus-generator-linux-x86
+try chmod +x ./commonapi-generator/commonapi-generator-linux-$ARCH
+try chmod +x ./commonapi_dbus_generator/commonapi-dbus-generator-linux-$ARCH
 
 # Now you find the executables of the code generators in
 # cgen/commonapi-generator and cgen/commonapi_dbus_generator, respectively.
@@ -148,8 +149,8 @@ try chmod +x ./commonapi_dbus_generator/commonapi-dbus-generator-linux-x86
 #Finally you can generate code (CommonAPI code with the commonapi-generator and CommonAPI D-Bus code with the commonapi-dbus-generator):
 #Generate Code
 cd "$BASEDIR/project" || fail
-try ./cgen/commonapi-generator/commonapi-generator-linux-x86 -sk ./fidl/HelloWorld.fidl
-try ./cgen/commonapi_dbus_generator/commonapi-dbus-generator-linux-x86 ./fidl/HelloWorld.fidl
+try ./cgen/commonapi-generator/commonapi-generator-linux-$ARCH -sk ./fidl/HelloWorld.fidl
+try ./cgen/commonapi_dbus_generator/commonapi-dbus-generator-linux-$ARCH ./fidl/HelloWorld.fidl
 
 # Dirname for generated filesseems to have changed...
 case $PATCHVERSION in 
