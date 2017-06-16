@@ -82,8 +82,8 @@ install_prerequisites
 
 # Build Common API C++ Runtime
 cd "$BASEDIR" || fail
-git_clone http://git.projects.genivi.org/ipc/common-api-runtime.git
-cd common-api-runtime/ || fail
+git_clone https://github.com/GENIVI/capicxx-core-runtime.git
+cd capicxx-core-runtime/ || fail
 mkdir -p build
 cd build/ || fail
 try cmake ..
@@ -92,13 +92,13 @@ check_expected libCommonAPI.so
 
 # Build Common API C++ DBus Runtime
 cd "$BASEDIR" || fail
-git_clone http://git.projects.genivi.org/ipc/common-api-dbus-runtime.git
+git_clone https://github.com/GENIVI/capicxx-dbus-runtime.git
 try wget -c http://dbus.freedesktop.org/releases/dbus/dbus-1.8.20.tar.gz
 try tar -xzf dbus-1.8.20.tar.gz
 cd dbus-1.8.20/ || fail
-apply_patch ../common-api-dbus-runtime/src/dbus-patches/capi-dbus-add-send-with-reply-set-notify.patch
-apply_patch ../common-api-dbus-runtime/src/dbus-patches/capi-dbus-add-support-for-custom-marshalling.patch
-apply_patch ../common-api-dbus-runtime/src/dbus-patches/capi-dbus-correct-dbus-connection-block-pending-call.patch
+apply_patch ../capicxx-dbus-runtime/src/dbus-patches/capi-dbus-add-send-with-reply-set-notify.patch
+apply_patch ../capicxx-dbus-runtime/src/dbus-patches/capi-dbus-add-support-for-custom-marshalling.patch
+apply_patch ../capicxx-dbus-runtime/src/dbus-patches/capi-dbus-correct-dbus-connection-block-pending-call.patch
 try ./configure
 try make -j4
 check_expected dbus/.libs/libdbus-1.so.3
