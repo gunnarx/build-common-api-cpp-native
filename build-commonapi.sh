@@ -62,7 +62,7 @@ check_os(){
     os=`echo $result |awk -F":" '{print $2}' |tr A-Z a-z`
     if [[ $os =~ "ubuntu" ]] ; then
       sudo apt-get install libexpat1-dev cmake gcc g++ automake autoconf
-    elif [[ $os =~ "centos" || $os =~ "redhat" ]] ; then
+    elif [[ $os =~ "centos" || $os =~ "redhat" || $os =~ "fedora" ]] ; then
       sudo yum install expat-devel cmake gcc gcc-c++ automake autoconf
     else
       echo 'Not Known OS. Exiting!'
