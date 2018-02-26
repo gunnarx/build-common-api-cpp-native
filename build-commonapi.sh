@@ -105,7 +105,7 @@ check_expected dbus/.libs/libdbus-1.so.3
 
 # Build Common API DBus
 cd "$BASEDIR" || fail
-cd common-api-dbus-runtime/ || fail
+cd capicxx-dbus-runtime/ || fail
 mkdir -p build
 cd build || fail
 export PKG_CONFIG_PATH="$BASEDIR/dbus-1.8.20"
@@ -129,8 +129,11 @@ cp "$BASEDIR/examples/HelloWorld.fidl" fidl/
 cd "$BASEDIR/project" || fail
 mkdir -p cgen
 cd cgen/ || fail
-try wget -c http://docs.projects.genivi.org/yamaica-update-site/CommonAPI/generator/$MINORVERSION/$PATCHVERSION/commonapi-generator.zip
-try wget -c http://docs.projects.genivi.org/yamaica-update-site/CommonAPI/generator/$MINORVERSION/$PATCHVERSION/commonapi_dbus_generator.zip
+
+
+try wget -c https://github.com/GENIVI/capicxx-core-tools/releases/download/$PATCHVERSION/commonapi-generator.zip
+try wget -c https://github.com/GENIVI/capicxx-dbus-tools/releases/download/$PATCHVERSION/commonapi_dbus_generator.zip
+
 try unzip commonapi-generator.zip -d commonapi-generator
 try unzip commonapi_dbus_generator.zip -d commonapi_dbus_generator
 try chmod +x ./commonapi-generator/commonapi-generator-linux-$ARCH
