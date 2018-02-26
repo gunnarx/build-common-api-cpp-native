@@ -84,6 +84,7 @@ install_prerequisites
 cd "$BASEDIR" || fail
 git_clone https://github.com/GENIVI/capicxx-core-runtime.git
 cd capicxx-core-runtime/ || fail
+git checkout $PATCHVERSION || fail "capicxx-core: Failed git checkout of $PATCHVERSION"
 mkdir -p build
 cd build/ || fail
 try cmake ..
@@ -108,6 +109,7 @@ check_expected dbus/.libs/libdbus-1.so.3
 # ... then Common API DBus Runtime
 cd "$BASEDIR" || fail
 cd capicxx-dbus-runtime/ || fail
+git checkout $PATCHVERSION || fail "capicxx-dbus: Failed git checkout of $PATCHVERSION"
 mkdir -p build
 cd build || fail
 export PKG_CONFIG_PATH="$BASEDIR/dbus-1.8.20"
