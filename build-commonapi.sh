@@ -96,9 +96,9 @@ check_expected libCommonAPI.so
 # first patched D-Bus library...
 cd "$BASEDIR" || fail
 git_clone https://github.com/GENIVI/capicxx-dbus-runtime.git
-try wget -c http://dbus.freedesktop.org/releases/dbus/dbus-1.8.20.tar.gz
-try tar -xzf dbus-1.8.20.tar.gz
-cd dbus-1.8.20/ || fail
+try wget -c http://dbus.freedesktop.org/releases/dbus/dbus-1.10.10.tar.gz
+try tar -xzf dbus-1.10.10.tar.gz
+cd dbus-1.10.10/ || fail
 apply_patch ../capicxx-dbus-runtime/src/dbus-patches/capi-dbus-add-send-with-reply-set-notify.patch
 apply_patch ../capicxx-dbus-runtime/src/dbus-patches/capi-dbus-add-support-for-custom-marshalling.patch
 apply_patch ../capicxx-dbus-runtime/src/dbus-patches/capi-dbus-correct-dbus-connection-block-pending-call.patch
@@ -112,7 +112,7 @@ cd capicxx-dbus-runtime/ || fail
 git checkout $PATCHVERSION || fail "capicxx-dbus: Failed git checkout of $PATCHVERSION"
 mkdir -p build
 cd build || fail
-export PKG_CONFIG_PATH="$BASEDIR/dbus-1.8.20"
+export PKG_CONFIG_PATH="$BASEDIR/dbus-1.10.10"
 try cmake -DUSE_INSTALLED_COMMONAPI=OFF -DUSE_INSTALLED_DBUS=OFF ..
 try make -j4
 check_expected libCommonAPI-DBus.so

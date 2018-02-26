@@ -5,7 +5,7 @@ include_directories(
     src-gen
     ../capicxx-core-runtime/include
     ../capicxx-dbus-runtime/include
-    ../dbus-1.8.20
+    ../dbus-1.10.10
 )
 
 # CMake needs the policy set to avoid warning about
@@ -17,7 +17,7 @@ cmake_policy(SET CMP0015 NEW)
 link_directories(
     ../capicxx-core-runtime/build
     ../capicxx-dbus-runtime/build
-    ../dbus-1.8.20/dbus/.libs
+    ../dbus-1.10.10/dbus/.libs
 )
 
 add_executable(HelloWorldClient
