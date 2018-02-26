@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -std=c++0x")
- 
+
+# Include symbols, just in case we need to debug a crash
+set(CMAKE_BUILD_TYPE Debug)
+
 include_directories(
     src-gen
     ../capicxx-core-runtime/include
