@@ -19,14 +19,14 @@ link_directories(
     ../capicxx-dbus-runtime/build
     ../dbus-1.8.20/dbus/.libs
 )
- 
+
 add_executable(HelloWorldClient
     src/HelloWorldClient.cpp
     src-gen/v1/commonapi/HelloWorldDBusProxy.cpp
     src-gen/v1/commonapi/HelloWorldDBusDeployment.cpp
 )
 target_link_libraries(HelloWorldClient CommonAPI CommonAPI-DBus dbus-1)
- 
+
 add_executable(HelloWorldService
     src/HelloWorldService.cpp
     src/HelloWorldStubImpl.cpp

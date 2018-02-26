@@ -47,12 +47,12 @@ git_clone() {
    if [ -d $d ] ; then
       echo "Directory $d exists, no git clone attempted"
    else
-      try git clone $1 
+      try git clone $1
    fi
 }
 
 check_expected() {
-for f in $@ ; do 
+for f in $@ ; do
    [ -e $f ] || fail "Expected result file $f not present (not built)!"
 done
 }
@@ -91,6 +91,8 @@ try make -j4
 check_expected libCommonAPI.so
 
 # Build Common API C++ DBus Runtime
+
+# first patched D-Bus library...
 cd "$BASEDIR" || fail
 git_clone https://github.com/GENIVI/capicxx-dbus-runtime.git
 try wget -c http://dbus.freedesktop.org/releases/dbus/dbus-1.8.20.tar.gz
@@ -103,7 +105,7 @@ try ./configure
 try make -j4
 check_expected dbus/.libs/libdbus-1.so.3
 
-# Build Common API DBus
+# ... then Common API DBus Runtime
 cd "$BASEDIR" || fail
 cd capicxx-dbus-runtime/ || fail
 mkdir -p build
@@ -156,7 +158,7 @@ try ./cgen/commonapi-generator/commonapi-generator-linux-$ARCH -sk ./fidl/HelloW
 try ./cgen/commonapi_dbus_generator/commonapi-dbus-generator-linux-$ARCH ./fidl/HelloWorld.fidl
 
 # Dirname for generated filesseems to have changed...
-case $PATCHVERSION in 
+case $PATCHVERSION in
   3.1.3)
     versiondir=v1_0
     ;;
@@ -216,7 +218,7 @@ try cp "$BASEDIR/examples/HelloWorldService.cpp" src/
 
 # At the end we need the stub implementation; we realize it by creating a
 # stub-implementation class which is inherited from the stub-default
-# implementation. The header file is: 
+# implementation. The header file is:
 
 try cp "$BASEDIR/examples/HelloWorldStubImpl.hpp" src/
 try cp "$BASEDIR/examples/HelloWorldStubImpl.cpp" src/
