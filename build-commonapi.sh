@@ -20,7 +20,7 @@
 
 # SETTINGS
 MINORVERSION=3.1
-PATCHVERSION=3.1.5p2
+PATCHVERSION=3.1.10
 ARCH=$(uname -m)
 
 # Get absolute path to base dir
@@ -168,9 +168,8 @@ case $PATCHVERSION in
     versiondir=v1
     ;;
   *)
-    # I am not going to check other versions - you can do it.. ;)
-    echo "UNSUPPORTED, FIX SCRIPT for \$versiondir"
-    exit 1
+    # Assuming it won't change from now on...
+    versiondir=v1
     ;;
 esac
 
