@@ -3,10 +3,9 @@
 # This script is based on the detailed instructions from GENIVI public wiki
 # written by Juergen Gehring.
 # "CommonAPI C++ D-Bus in 10 minutes (from scratch)"
-# https://genivi-oss.atlassian.net/wiki/pages/viewpage.action?pageId=5472316
-# FIXME: Update URL when the wiki domain changes
+# https://at.projects.genivi.org/wiki/pages/viewpage.action?pageId=5472316
 #
-# (C) Gunnar Andersson <gand@acm.org>
+# (C) 2016,2018 Gunnar Andersson <gand@acm.org>
 # Purpose: Download and native compilation of CommonAPI C++ DBus
 #
 # License: http://creativecommons.org/licenses/by-sa/4.0/
@@ -72,6 +71,18 @@ check_os(){
 
 install_prerequisites() {
   check_os
+
+  # This is very rough, but just the bare minimum to support
+  # different distros.  Might be buggy on some, try and see.
+  dnf -v >/dev/null 2>&1 && dnf=true || dnf=false
+  $dnf || yum -v >/dev/null 2>&1 && yum=true || yum=false
+  apt-get -v >/dev/null 2>&1 && apt=true || apt=false
+
+  echo dnf $dnf yum $yum apt $apt
+
+  $dnf && sudo dnf install expat-devel cmake gcc gcc-c++ automake autoconf
+  $yum && sudo yum install expat-devel cmake gcc gcc-c++ automake autoconf
+  $apt && sudo apt install expat-devel cmake gcc gcc-c++ automake autoconf
 }
 
 apply_patch() {
@@ -134,10 +145,8 @@ cd "$BASEDIR/project" || fail
 mkdir -p cgen
 cd cgen/ || fail
 
-
 try wget -c https://github.com/GENIVI/capicxx-core-tools/releases/download/$PATCHVERSION/commonapi-generator.zip
 try wget -c https://github.com/GENIVI/capicxx-dbus-tools/releases/download/$PATCHVERSION/commonapi_dbus_generator.zip
-
 try unzip commonapi-generator.zip -d commonapi-generator
 try unzip commonapi_dbus_generator.zip -d commonapi_dbus_generator
 try chmod +x ./commonapi-generator/commonapi-generator-linux-$ARCH
