@@ -128,12 +128,44 @@ try cmake -DUSE_INSTALLED_COMMONAPI=OFF -DUSE_INSTALLED_DBUS=OFF ..
 try make -j4
 check_expected libCommonAPI-DBus.so
 
+# Build Boost
+cd "$BASEDIR" || fail
+try wget -c https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.gz
+try tar -xzf boost_1_64_0.tar.gz
+cd boost_1_64_0/
+try ./bootstrap.sh
+BOOST_ROOT=`realpath $PWD/../install`
+mkdir -p $BOOST_ROOT
+try ./b2 -d+2 --prefix=$BOOST_ROOT link=shared threading=multi toolset=gcc -j$(nproc) install
+
+# Build vsomeip
+cd "$BASEDIR" || fail
+VSOMEIP_INSTALL=`realpath $PWD/install`
+git_clone https://github.com/GENIVI/vsomeip.git
+cd vsomeip
+apply_patch ../patch/0001-Fix-gcc8-build-error.patch
+mkdir -p build
+cd build || fail
+try cmake -DBOOST_ROOT=${BOOST_ROOT} -DENABLE_SIGNAL_HANDLING=1 ..
+try make -j$(nproc)
+
+# build SomeIP CommonAPI Runtime
+cd "$BASEDIR" || fail
+git_clone https://github.com/GENIVI/capicxx-someip-runtime.git
+cd capicxx-someip-runtime
+git checkout $PATCHVERSION || fail "capicxx-dbus: Failed git checkout of $PATCHVERSION"
+mkdir -p build
+cd build || fail
+try cmake -DUSE_INSTALLED_COMMONAPI=OFF ..
+try make -j$(nproc)
+
 # Create application
 cd "$BASEDIR" || fail
 mkdir project
 cd project/ || fail
 mkdir fidl
 cp "$BASEDIR/examples/HelloWorld.fidl" fidl/
+cp "$BASEDIR/examples/HelloWorld.fdepl" fidl/
 
 # Ready! A service which instantiates the interface HelloWorld provides the
 # function sayHello which can be called. The next step is to generate code.
@@ -147,10 +179,13 @@ cd cgen/ || fail
 
 try wget -c https://github.com/GENIVI/capicxx-core-tools/releases/download/$PATCHVERSION/commonapi-generator.zip
 try wget -c https://github.com/GENIVI/capicxx-dbus-tools/releases/download/$PATCHVERSION/commonapi_dbus_generator.zip
-try unzip commonapi-generator.zip -d commonapi-generator
-try unzip commonapi_dbus_generator.zip -d commonapi_dbus_generator
+try wget -c https://github.com/GENIVI/capicxx-someip-tools/releases/download/$PATCHVERSION/commonapi_someip_generator.zip
+try unzip -u commonapi-generator.zip -d commonapi-generator
+try unzip -u commonapi_dbus_generator.zip -d commonapi_dbus_generator
+try unzip -u commonapi_someip_generator.zip -d commonapi_someip_generator
 try chmod +x ./commonapi-generator/commonapi-generator-linux-$ARCH
 try chmod +x ./commonapi_dbus_generator/commonapi-dbus-generator-linux-$ARCH
+try chmod +x ./commonapi_someip_generator/commonapi-someip-generator-linux-$ARCH
 
 # Now you find the executables of the code generators in
 # cgen/commonapi-generator and cgen/commonapi_dbus_generator, respectively.
@@ -167,6 +202,7 @@ try chmod +x ./commonapi_dbus_generator/commonapi-dbus-generator-linux-$ARCH
 cd "$BASEDIR/project" || fail
 try ./cgen/commonapi-generator/commonapi-generator-linux-$ARCH -sk ./fidl/HelloWorld.fidl
 try ./cgen/commonapi_dbus_generator/commonapi-dbus-generator-linux-$ARCH ./fidl/HelloWorld.fidl
+try ./cgen/commonapi_someip_generator/commonapi-someip-generator-linux-$ARCH ./fidl/HelloWorld.fdepl
 
 # Dirname for generated filesseems to have changed...
 case $PATCHVERSION in
@@ -259,9 +295,11 @@ try cmake ..
 try make -j4
 
 # Your output should look similiar. In the build direcory there should be two executables now: HelloWorldClient and HelloWorldService.
-
+echo "For DBus HelloWorld"
 echo "You may now run $PWD/HelloWorldService &"
 echo "and $PWD/HelloWorldClient"
 # ./HelloWorldService &
 # ./HelloWorldClient
-
+echo "For SomeIP HelloWorld"
+echo "You may now run $PWD/HelloWorldSomeIPService &"
+echo "and $PWD/HelloWorldSomeIPClient"
