@@ -4,6 +4,8 @@ A bash script encoding of all the steps in:
 
 URL: https://at.projects.genivi.org/wiki/pages/viewpage.action?pageId=5472316
 
+[CommonAPI C SomeIP in 10 minutes](https://github.com/GENIVI/capicxx-someip-tools/wiki/CommonAPI-C---SomeIP-in-10-minutes)
+
 I still recommend you go through the manual steps to learn how to do this
 in general - that's the idea of the tutorial of course.  The purpose of
 storing the example files already created, and scripting it is mostly to

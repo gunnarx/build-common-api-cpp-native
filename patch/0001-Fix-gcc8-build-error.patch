@@ -1,0 +1,26 @@
+From b41884e4786e03ca36edefbca68312f5ba2db880 Mon Sep 17 00:00:00 2001
+From: Phong Tran <tranmanphong@gmail.com>
+Date: Sat, 15 Sep 2018 08:57:48 +0700
+Subject: [PATCH] Fix gcc8 build error
+
+This ref https://github.com/GENIVI/vsomeip/issues/25
+---
+ implementation/endpoints/include/netlink_connector.hpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/implementation/endpoints/include/netlink_connector.hpp b/implementation/endpoints/include/netlink_connector.hpp
+index f71ba88..730874e 100644
+--- a/implementation/endpoints/include/netlink_connector.hpp
++++ b/implementation/endpoints/include/netlink_connector.hpp
+@@ -67,7 +67,7 @@ public:
+     /// Get the underlying endpoint in the native type.
+     data_type* data()
+     {
+-        return &sockaddr;
++        return reinterpret_cast<struct sockaddr*>(&sockaddr);
+     }
+ 
+     /// Get the underlying endpoint in the native type.
+-- 
+2.17.1
+
