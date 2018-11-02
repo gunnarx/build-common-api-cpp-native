@@ -18,8 +18,15 @@
 # "Valid for CommonAPI 3.1.3 and vsomeip 1.3.0"
 
 # SETTINGS
-MINORVERSION=3.1
-PATCHVERSION=3.1.10
+
+CORE_TOOLS_VERSION=3.1.12.3
+DBUS_TOOLS_VERSION=3.1.12.1
+SOMEIP_TOOLS_VERSION=3.1.12.1
+
+CORE_RUNTIME_VERSION=3.1.12.r
+DBUS_RUNTIME_VERSION=3.1.12.7
+SOMEIP_RUNTIME_VERSION=3.1.12.12
+
 ARCH=$(uname -m)
 
 # Get absolute path to base dir
@@ -95,7 +102,7 @@ install_prerequisites
 cd "$BASEDIR" || fail
 git_clone https://github.com/GENIVI/capicxx-core-runtime.git
 cd capicxx-core-runtime/ || fail
-git checkout $PATCHVERSION || fail "capicxx-core: Failed git checkout of $PATCHVERSION"
+git checkout $CORE_RUNTIME_VERSION || fail "capicxx-core: Failed git checkout of $CORE_RUNTIME_VERSION"
 mkdir -p build
 cd build/ || fail
 try cmake ..
@@ -120,7 +127,7 @@ check_expected dbus/.libs/libdbus-1.so.3
 # ... then Common API DBus Runtime
 cd "$BASEDIR" || fail
 cd capicxx-dbus-runtime/ || fail
-git checkout $PATCHVERSION || fail "capicxx-dbus: Failed git checkout of $PATCHVERSION"
+git checkout $DBUS_RUNTIME_VERSION || fail "capicxx-dbus: Failed git checkout of $DBUS_RUNTIME_VERSION"
 mkdir -p build
 cd build || fail
 export PKG_CONFIG_PATH="$BASEDIR/dbus-1.10.10"
@@ -153,7 +160,7 @@ try make -j$(nproc)
 cd "$BASEDIR" || fail
 git_clone https://github.com/GENIVI/capicxx-someip-runtime.git
 cd capicxx-someip-runtime
-git checkout $PATCHVERSION || fail "capicxx-dbus: Failed git checkout of $PATCHVERSION"
+git checkout $SOMEIP_RUNTIME_VERSION || fail "capicxx-dbus: Failed git checkout of $SOMEIP_RUNTIME_VERSION"
 mkdir -p build
 cd build || fail
 try cmake -DUSE_INSTALLED_COMMONAPI=OFF ..
@@ -177,9 +184,9 @@ cd "$BASEDIR/project" || fail
 mkdir -p cgen
 cd cgen/ || fail
 
-try wget -c https://github.com/GENIVI/capicxx-core-tools/releases/download/$PATCHVERSION/commonapi-generator.zip
-try wget -c https://github.com/GENIVI/capicxx-dbus-tools/releases/download/$PATCHVERSION/commonapi_dbus_generator.zip
-try wget -c https://github.com/GENIVI/capicxx-someip-tools/releases/download/$PATCHVERSION/commonapi_someip_generator.zip
+try wget -c https://github.com/GENIVI/capicxx-core-tools/releases/download/$CORE_TOOLS_VERSION/commonapi-generator.zip
+try wget -c https://github.com/GENIVI/capicxx-dbus-tools/releases/download/$DBUS_TOOLS_VERSION/commonapi_dbus_generator.zip
+try wget -c https://github.com/GENIVI/capicxx-someip-tools/releases/download/$SOMEIP_TOOLS_VERSION/commonapi_someip_generator.zip
 try unzip -u commonapi-generator.zip -d commonapi-generator
 try unzip -u commonapi_dbus_generator.zip -d commonapi_dbus_generator
 try unzip -u commonapi_someip_generator.zip -d commonapi_someip_generator
