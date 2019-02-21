@@ -1,6 +1,6 @@
 language: c++
 
-dist: bionic
+dist: xenial
 
 env:
   - QUIET=true
@@ -9,7 +9,6 @@ jdk:
   - openjdk8
 
 script:
-  - jdk_switcher use openjdk8
   - java -version
   - xvfb-run -e ERRORS ./build-commonapi.sh || cat ERRORS
   - cat ERRORS

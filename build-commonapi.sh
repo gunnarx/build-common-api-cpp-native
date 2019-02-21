@@ -122,18 +122,26 @@ install_prerequisites() {
   # different distros.  Might be buggy on some, try and see.
   dnf -v >/dev/null 2>&1 && dnf=true || dnf=false
   $dnf || yum -v >/dev/null 2>&1 && yum=true || yum=false
-  apt -v >/dev/null 2>&1 && apt=true || apt=false
+  apt-get -v >/dev/null 2>&1 && apt=true || apt=false
 
   if [ ! -f .installed_packages ] ; then
     $dnf && $sudo dnf install -y unzip java-1.8.0-openjdk openjdk git make jexpat-devel cmake gcc gcc-c++ automake autoconf wget pkg-config
     $yum && $sudo yum install -y unzip java-1.8.0-openjdk openjdk git make jexpat-devel cmake gcc gcc-c++ automake autoconf wget pkg-config
-    $apt && $sudo apt install -y unzip openjdk-8-jre git make libexpat1-dev cmake gcc g++ automake autoconf wget pkg-config
+    $apt && $sudo apt-get update && apt-get install -y unzip openjdk-8-jre git make libexpat1-dev cmake gcc g++ automake autoconf wget pkg-config
   fi
   touch .installed_packages
 }
 
 apply_patch() {
-   patch -p1 <"$1" || fail "patch application failed -- see above"
+  # Use forward to avoid questions if patch had been applied already (second run)
+  # Answer proposed by Tom Hale, reference:
+  # https://stackoverflow.com/questions/21928344/how-to-not-break-the-makefile-if-patch-skips-the-patch
+  if patch -p1 --dry-run --reverse --force < "$1" >/dev/null 2>&1; then
+    echo "Patch already applied - skipping."
+  else # patch not yet applied
+    echo "Patching..."
+    patch -p1 -N < "$1" || echo "Patch failed" >&2 && return 1
+  fi
 }
 
 echo Installing prerequisites
@@ -163,10 +171,11 @@ git_clone https://github.com/GENIVI/capicxx-dbus-runtime.git
 try wget -c http://dbus.freedesktop.org/releases/dbus/dbus-1.10.10.tar.gz
 try tar -xzf dbus-1.10.10.tar.gz
 cd dbus-1.10.10/ || fail
+set +e
 apply_patch ../capicxx-dbus-runtime/src/dbus-patches/capi-dbus-add-send-with-reply-set-notify.patch
 apply_patch ../capicxx-dbus-runtime/src/dbus-patches/capi-dbus-add-support-for-custom-marshalling.patch
 apply_patch ../capicxx-dbus-runtime/src/dbus-patches/capi-dbus-correct-dbus-connection-block-pending-call.patch
-try ./configure
+set -e
 if $QUIET ; then
   try make -j$(nproc) >/dev/null
 else
