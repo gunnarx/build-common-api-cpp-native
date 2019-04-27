@@ -67,7 +67,7 @@ done
 check_os(){
     result=`lsb_release -i`
     os=`echo $result |awk -F":" '{print $2}' |tr A-Z a-z`
-    if [[ $os =~ "ubuntu" ]] ; then
+    if [[ $os =~ "ubuntu" || $os =~ "debian" ]] ; then
       sudo apt-get install libexpat1-dev cmake gcc g++ automake autoconf
     elif [[ $os =~ "centos" || $os =~ "redhat" || $os =~ "fedora" ]] ; then
       sudo yum install expat-devel cmake gcc gcc-c++ automake autoconf
