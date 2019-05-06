@@ -65,8 +65,18 @@ done
 }
 
 check_os(){
+
     result=`lsb_release -i`
-    os=`echo $result |awk -F":" '{print $2}' |tr A-Z a-z`
+    # If lsb_release binary does not exist
+    if [ -z "$result" ] ; then
+       fgrep -qi fedora /etc/os-release && os=fedora
+       fgrep -qi ubuntu /etc/os-release && os=ubuntu
+       fgrep -qi centos /etc/os-release && os=centos
+       fgrep -qi debian /etc/os-release && os=debian
+    else
+      os=`echo $result |awk -F":" '{print $2}' |tr A-Z a-z`
+    fi
+
     if [[ $os =~ "ubuntu" || $os =~ "debian" ]] ; then
       sudo apt-get install libexpat1-dev cmake gcc g++ automake autoconf
     elif [[ $os =~ "centos" || $os =~ "redhat" || $os =~ "fedora" ]] ; then
