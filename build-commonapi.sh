@@ -73,11 +73,12 @@ check_os(){
        fgrep -qi ubuntu /etc/os-release && os=ubuntu
        fgrep -qi centos /etc/os-release && os=centos
        fgrep -qi debian /etc/os-release && os=debian
+       fgrep -qi apertis /etc/os-release && os=apertis
     else
       os=`echo $result |awk -F":" '{print $2}' |tr A-Z a-z`
     fi
 
-    if [[ $os =~ "ubuntu" || $os =~ "debian" ]] ; then
+    if [[ $os =~ "ubuntu" || $os =~ "debian" || $os =~ "apertis" ]] ; then
       sudo apt-get install libexpat1-dev cmake gcc g++ automake autoconf
     elif [[ $os =~ "centos" || $os =~ "redhat" || $os =~ "fedora" ]] ; then
       sudo yum install expat-devel cmake gcc gcc-c++ automake autoconf
