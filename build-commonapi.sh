@@ -94,7 +94,7 @@ install_prerequisites() {
   # different distros.  Might be buggy on some, try and see.
   dnf -v >/dev/null 2>&1 && dnf=true || dnf=false
   $dnf || yum -v >/dev/null 2>&1 && yum=true || yum=false
-  apt-get -v >/dev/null 2>&1 && apt=true || apt=false
+  apt -v >/dev/null 2>&1 && apt=true || apt=false
 
   echo dnf $dnf yum $yum apt $apt
 
