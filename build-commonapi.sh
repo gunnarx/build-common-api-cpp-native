@@ -78,13 +78,12 @@ check_os(){
       os=`echo $result |awk -F":" '{print $2}' |tr A-Z a-z`
     fi
 
-    if [[ $os =~ "ubuntu" || $os =~ "debian" || $os =~ "apertis" ]] ; then
-      sudo apt-get install libexpat1-dev cmake gcc g++ automake autoconf
-    elif [[ $os =~ "centos" || $os =~ "redhat" || $os =~ "fedora" ]] ; then
-      sudo yum install expat-devel cmake gcc gcc-c++ automake autoconf
+    if [[ $os =~ "ubuntu" || $os =~ "debian" || $os =~ "apertis" || $os =~ "centos" || $os =~ "redhat" || $os =~ "fedora" ]] ; then
+      echo "OK, recognized distro as $os ..."
     else
-      echo 'Not Known OS. Exiting!'
-      exit 1
+      echo "***"
+      echo "*** WARNING: Unsupported OS/distro.  This might fail later on."
+      echo "***"
     fi
 }
 
@@ -101,7 +100,7 @@ install_prerequisites() {
 
   $dnf && sudo dnf install expat-devel cmake gcc gcc-c++ automake autoconf
   $yum && sudo yum install expat-devel cmake gcc gcc-c++ automake autoconf
-  $apt && sudo apt install expat-devel cmake gcc gcc-c++ automake autoconf
+  $apt && sudo apt install git make libexpat1-dev cmake gcc g++ automake autoconf
 }
 
 apply_patch() {
