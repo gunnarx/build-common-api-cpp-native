@@ -37,6 +37,20 @@ BASEDIR="$PWD"
 
 try() { $@ || fail "Command $* failed -- check above for details" ;}
 
+# Either sudo must exist, or script must run as root
+which sudo >/dev/null
+if [ $? -ne 0 ] ; then
+   if [ $(id -u) -ne 0 ] ; then
+      fail "No sudo command exists in your system.  (You could install it (recommended) or run as root instead)"
+   else
+      # Running as root - define sudo as empty
+      sudo=
+   fi
+else
+   # sudo exists
+   sudo=sudo
+fi
+
 fail() {
    set +x # Turn off command listing now, if it's on
    echo "FAILED!  Message follows:"
@@ -99,9 +113,9 @@ install_prerequisites() {
   echo dnf $dnf yum $yum apt $apt
 
   if [ ! -f .installed_packages ] ; then
-    $dnf && sudo dnf install expat-devel cmake gcc gcc-c++ automake autoconf
-    $yum && sudo yum install expat-devel cmake gcc gcc-c++ automake autoconf
-    $apt && sudo apt install git make libexpat1-dev cmake gcc g++ automake autoconf
+    $dnf && $sudo dnf install -y unzip git make jexpat-devel cmake gcc gcc-c++ automake autoconf wget pkg-config
+    $yum && $sudo yum install -y unzip git make jexpat-devel cmake gcc gcc-c++ automake autoconf wget pkg-config
+    $apt && $sudo apt install -y unzip git make libexpat1-dev cmake gcc g++ automake autoconf wget pkg-config
   fi
   touch .installed_packages
 }
