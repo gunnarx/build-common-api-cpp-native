@@ -192,7 +192,7 @@ cd capicxx-someip-runtime
 git checkout $SOMEIP_RUNTIME_VERSION || fail "capicxx-dbus: Failed git checkout of $SOMEIP_RUNTIME_VERSION"
 mkdir -p build
 cd build || fail
-try cmake -DUSE_INSTALLED_COMMONAPI=OFF ..
+try cmake -DBOOST_ROOT=${BOOST_ROOT} -DUSE_INSTALLED_COMMONAPI=OFF ..
 try make -j$(nproc)
 
 # Create application
