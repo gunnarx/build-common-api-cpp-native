@@ -25,6 +25,7 @@ link_directories(
     ../capicxx-someip-runtime/build
     ../dbus-1.10.10/dbus/.libs
     ../vsomeip/build
+    ../install/lib
 )
 
 add_executable(HelloWorldClient
