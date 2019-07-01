@@ -104,6 +104,14 @@ check_os(){
 install_prerequisites() {
   check_os
 
+  java -version || {
+    echo "Java not installed?  (Could not check version)"
+    echo "Please install a Java interpreter (JRE)"
+    echo "This is not done by the script because it would need to force the java version and this may interfere with the system"
+    echo "In addition, the java packages have different names"
+    fail "No java JRE is installed"
+  }
+
   # This is very rough, but just the bare minimum to support
   # different distros.  Might be buggy on some, try and see.
   dnf -v >/dev/null 2>&1 && dnf=true || dnf=false
