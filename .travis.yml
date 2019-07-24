@@ -1,0 +1,18 @@
+language: c++
+
+dist: bionic
+
+env:
+  - QUIET=true
+
+jdk:
+  - openjdk8
+
+script:
+  - jdk_switcher use openjdk8
+  - java -version
+  - xvfb-run -e ERRORS ./build-commonapi.sh || cat ERRORS
+  - cat ERRORS
+
+# Installed by script but could be added here perhaps
+# unzip openjdk-8-jre git make libexpat1-dev cmake gcc g++ automake autoconf wget pkg-config

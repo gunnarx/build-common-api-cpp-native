@@ -1,6 +1,9 @@
-A bash script encoding of all the steps in:
+A bash script to automate building of Common API libraries
+and to encode the steps in:
 
 "CommonAPI C++ **D-Bus** and **SOME/IP** and in 10 minutes (from scratch)"
+
+[![Build Status](https://travis-ci.org/gunnarx/build-common-api-cpp-native.svg?branch=master)](https://travis-ci.org/gunnarx/build-common-api-cpp-native)
 
 The script is now building both D-Bus and SOME/IP versions in one go.  The
 original individual instruction pages are linked above.  After running the
