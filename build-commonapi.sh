@@ -13,6 +13,12 @@
 #  "Except where otherwise noted, content on this site is licensed under a
 #  Creative Commons Attribution-ShareAlike 4.0 International License" )
 
+# For CI build we can't log every step
+if [ "$QUIET" = "true" ] ; then
+  set +x
+else
+  QUIET=false
+fi
 
 # According to web page:
 # "Valid for CommonAPI 3.1.3 and vsomeip 1.3.0"
@@ -118,12 +124,10 @@ install_prerequisites() {
   $dnf || yum -v >/dev/null 2>&1 && yum=true || yum=false
   apt -v >/dev/null 2>&1 && apt=true || apt=false
 
-  echo dnf $dnf yum $yum apt $apt
-
   if [ ! -f .installed_packages ] ; then
-    $dnf && $sudo dnf install -y unzip git make jexpat-devel cmake gcc gcc-c++ automake autoconf wget pkg-config
-    $yum && $sudo yum install -y unzip git make jexpat-devel cmake gcc gcc-c++ automake autoconf wget pkg-config
-    $apt && $sudo apt install -y unzip git make libexpat1-dev cmake gcc g++ automake autoconf wget pkg-config
+    $dnf && $sudo dnf install -y unzip java-1.8.0-openjdk openjdk git make jexpat-devel cmake gcc gcc-c++ automake autoconf wget pkg-config
+    $yum && $sudo yum install -y unzip java-1.8.0-openjdk openjdk git make jexpat-devel cmake gcc gcc-c++ automake autoconf wget pkg-config
+    $apt && $sudo apt install -y unzip openjdk-8-jre git make libexpat1-dev cmake gcc g++ automake autoconf wget pkg-config
   fi
   touch .installed_packages
 }
@@ -132,9 +136,11 @@ apply_patch() {
    patch -p1 <"$1" || fail "patch application failed -- see above"
 }
 
+echo Installing prerequisites
 install_prerequisites
 
 # Build Common API C++ Runtime
+echo Building CommonAPI Core Runtime
 cd "$BASEDIR" || fail
 git_clone https://github.com/GENIVI/capicxx-core-runtime.git
 cd capicxx-core-runtime/ || fail
@@ -142,11 +148,15 @@ git checkout $CORE_RUNTIME_VERSION || fail "capicxx-core: Failed git checkout of
 mkdir -p build
 cd build/ || fail
 try cmake ..
-try make -j4
+if $QUIET ; then
+  try make -j$(nproc) >/dev/null
+else
+  try make -j$(nproc)
+fi
 check_expected libCommonAPI.so
 
 # Build Common API C++ DBus Runtime
-
+echo Building D-Bus
 # first patched D-Bus library...
 cd "$BASEDIR" || fail
 git_clone https://github.com/GENIVI/capicxx-dbus-runtime.git
@@ -157,10 +167,15 @@ apply_patch ../capicxx-dbus-runtime/src/dbus-patches/capi-dbus-add-send-with-rep
 apply_patch ../capicxx-dbus-runtime/src/dbus-patches/capi-dbus-add-support-for-custom-marshalling.patch
 apply_patch ../capicxx-dbus-runtime/src/dbus-patches/capi-dbus-correct-dbus-connection-block-pending-call.patch
 try ./configure
-try make -j4
+if $QUIET ; then
+  try make -j$(nproc) >/dev/null
+else
+  try make -j$(nproc)
+fi
 check_expected dbus/.libs/libdbus-1.so.3
 
 # ... then Common API DBus Runtime
+echo Building CommonAPI D-Bus Runtime
 cd "$BASEDIR" || fail
 cd capicxx-dbus-runtime/ || fail
 git checkout $DBUS_RUNTIME_VERSION || fail "capicxx-dbus: Failed git checkout of $DBUS_RUNTIME_VERSION"
@@ -168,10 +183,15 @@ mkdir -p build
 cd build || fail
 export PKG_CONFIG_PATH="$BASEDIR/dbus-1.10.10"
 try cmake -DUSE_INSTALLED_COMMONAPI=OFF -DUSE_INSTALLED_DBUS=OFF ..
-try make -j4
+if $QUIET ; then
+  try make -j4 >/dev/null
+else
+  try make -j4
+fi
 check_expected libCommonAPI-DBus.so
 
 # Build Boost
+echo Building Boost
 cd "$BASEDIR" || fail
 try wget -c https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.gz
 try tar -xzf boost_1_64_0.tar.gz
@@ -179,9 +199,14 @@ cd boost_1_64_0/
 try ./bootstrap.sh
 BOOST_ROOT=`realpath $PWD/../install`
 mkdir -p $BOOST_ROOT
-try ./b2 -d+2 --prefix=$BOOST_ROOT link=shared threading=multi toolset=gcc -j$(nproc) install
+if $QUIET ; then
+  try ./b2 -d+2 --prefix=$BOOST_ROOT link=shared threading=multi toolset=gcc -j$(nproc) install >/dev/null
+else
+  try ./b2 -d+2 --prefix=$BOOST_ROOT link=shared threading=multi toolset=gcc -j$(nproc) install
+fi
 
 # Build vsomeip
+echo Building vsomeip
 cd "$BASEDIR" || fail
 VSOMEIP_INSTALL=`realpath $PWD/install`
 git_clone https://github.com/GENIVI/vsomeip.git
@@ -190,9 +215,14 @@ git checkout $VSOMEIP_VERSION || fail "vsomeip: Failed git checkout of $VSOMEIP_
 mkdir -p build
 cd build || fail
 try cmake -DBOOST_ROOT=${BOOST_ROOT} -DENABLE_SIGNAL_HANDLING=1 ..
-try make -j$(nproc)
+if $QUIET ; then
+  try make -j$(nproc) >/dev/null
+else
+  try make -j$(nproc)
+fi
 
 # build SomeIP CommonAPI Runtime
+echo CommonAPI SOME/IP Runtime
 cd "$BASEDIR" || fail
 git_clone https://github.com/GENIVI/capicxx-someip-runtime.git
 cd capicxx-someip-runtime
@@ -200,9 +230,15 @@ git checkout $SOMEIP_RUNTIME_VERSION || fail "capicxx-dbus: Failed git checkout 
 mkdir -p build
 cd build || fail
 try cmake -DBOOST_ROOT=${BOOST_ROOT} -DUSE_INSTALLED_COMMONAPI=OFF ..
-try make -j$(nproc)
+# build SomeIP CommonAPI Runtime
+if $QUIET ; then
+  try make -j$(nproc) >/dev/null
+else
+  try make -j$(nproc)
+fi
 
 # Create application
+echo Prepare application
 cd "$BASEDIR" || fail
 mkdir project
 cd project/ || fail
@@ -216,6 +252,7 @@ cp "$BASEDIR/examples/HelloWorld.fdepl" fidl/
 # subdirectory cgen of our project directory:
 
 # Get Code Generators
+echo Downloading code generators
 cd "$BASEDIR/project" || fail
 mkdir -p cgen
 cd cgen/ || fail
@@ -242,6 +279,7 @@ try chmod +x ./commonapi_someip_generator/commonapi-someip-generator-linux-$ARCH
 
 #Finally you can generate code (CommonAPI code with the commonapi-generator and CommonAPI D-Bus code with the commonapi-dbus-generator):
 #Generate Code
+echo Generating code from examples
 cd "$BASEDIR/project" || fail
 try ./cgen/commonapi-generator/commonapi-generator-linux-$ARCH -sk ./fidl/HelloWorld.fidl
 try ./cgen/commonapi_dbus_generator/commonapi-dbus-generator-linux-$ARCH ./fidl/HelloWorld.fidl
@@ -263,6 +301,7 @@ esac
 
 cd src-gen/$versiondir/commonapi || fail
 
+echo Checking if code was generated
 check_expected HelloWorldDBusDeployment.cpp HelloWorldDBusProxy.cpp\
       HelloWorldDBusStubAdapter.cpp HelloWorld.hpp HelloWorldProxy.hpp\
       HelloWorldStubDefault.hpp HelloWorldDBusDeployment.hpp\
@@ -280,6 +319,9 @@ cd "$BASEDIR/project" || fail
 mkdir src
 mkdir build
 check_expected build  cgen  fidl  src  src-gen
+
+
+echo Organizing generated files
 
 # Now we have to create 4 files: The client code (HelloWorldClient.cpp), one file for the main-function of the service (HelloWorldService.cpp) and 2 files (header and source) for the implementation of the generated skeleton for the stub (we call it HelloWorldStubImpl.hpp and HelloWorldStubImpl.cpp).
 
@@ -328,6 +370,8 @@ try cp "$BASEDIR/examples/HelloWorldStubImpl.cpp" src/
 # directly in the project directory: CMakeLists.txt
 
 try cp "$BASEDIR/examples/CMakeLists.txt" .
+
+echo Compiling generated example code
 
 # As include paths we need the include directories of CommonAPI and bindings and D-Bus; the directory of the generated code must be also added. We link everything together and do not discuss here questions concerning the configuration with different bindings. Therefore we tell CMake where to find the CommonAPI libraries and libdbus (replace the absolute paths with the paths on your machine). At the end we build two executables, one for the service and one for the client.
 # Now call CMake (remember that we created the build directory before:
