@@ -387,6 +387,10 @@ echo "You may now run $PWD/HelloWorldService &"
 echo "and $PWD/HelloWorldClient"
 # ./HelloWorldService &
 # ./HelloWorldClient
-echo "For SomeIP HelloWorld"
-echo "You may now run $PWD/HelloWorldSomeIPService &"
-echo "and $PWD/HelloWorldSomeIPClient"
+echo "For SomeIP HelloWorld, you may now run $PWD/HelloWorldSomeIPService &"
+echo "and after that $PWD/HelloWorldSomeIPClient"
+echo 'NOTE: Before that you may need to set the LD_LIBRARY_PATH variable to find the built libraries.'
+echo 'For example:'
+echo 'export LD_LIBRARY_PATH="$PWD/vsomeip/build:$LD_LIBRARY_PATH"'
+echo '(Please check the paths - $PWD will expand correctly if you are standing in the project directory)'
+echo 'Please refer to README.md for more information!!'
