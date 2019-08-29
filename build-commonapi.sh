@@ -223,11 +223,13 @@ cd vsomeip
 git checkout $VSOMEIP_VERSION || fail "vsomeip: Failed git checkout of $VSOMEIP_VERSION"
 mkdir -p build
 cd build || fail
-try cmake -DBOOST_ROOT=${BOOST_ROOT} -DENABLE_SIGNAL_HANDLING=1 ..
+try cmake -DCMAKE_INSTALL_PREFIX="$VSOMEIP_INSTALL" -DBOOST_ROOT=${BOOST_ROOT} -DENABLE_SIGNAL_HANDLING=1 ..
 if $QUIET ; then
   try make -j$(nproc) >/dev/null
+  try make install >/dev/null
 else
   try make -j$(nproc)
+  try make install
 fi
 
 # build SomeIP CommonAPI Runtime
@@ -403,3 +405,4 @@ echo 'For example:'
 echo 'export LD_LIBRARY_PATH="$PWD/vsomeip/build:$LD_LIBRARY_PATH"'
 echo '(Please check the paths - $PWD will expand correctly if you are standing in the project directory)'
 echo 'Please refer to README.md for more information!!'
+
