@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash -xe 
 
 # This script is based on the detailed instructions from GENIVI public wiki
 # written by Juergen Gehring.
@@ -33,6 +33,8 @@ CORE_RUNTIME_VERSION=3.1.12.6
 DBUS_RUNTIME_VERSION=3.1.12.11
 SOMEIP_RUNTIME_VERSION=3.1.12.17
 VSOMEIP_VERSION=2.14.16
+BOOST_DL_DIR_VERSION=1.65.0
+BOOST_TAR_VERSION=1_65_0
 
 ARCH=$(uname -m)
 
@@ -44,6 +46,7 @@ BASEDIR="$PWD"
 try() { $@ || fail "Command $* failed -- check above for details" ;}
 
 # Either sudo must exist, or script must run as root
+set +e
 which sudo >/dev/null
 if [ $? -ne 0 ] ; then
    if [ $(id -u) -ne 0 ] ; then
@@ -56,6 +59,8 @@ else
    # sudo exists
    sudo=sudo
 fi
+set -e
+
 
 fail() {
    set +x # Turn off command listing now, if it's on
@@ -146,6 +151,7 @@ apply_patch() {
 
 echo Installing prerequisites
 install_prerequisites
+set -e
 
 # Build Common API C++ Runtime
 echo Building CommonAPI Core Runtime
@@ -177,10 +183,15 @@ apply_patch ../capicxx-dbus-runtime/src/dbus-patches/capi-dbus-add-support-for-c
 apply_patch ../capicxx-dbus-runtime/src/dbus-patches/capi-dbus-correct-dbus-connection-block-pending-call.patch
 set -e
 if $QUIET ; then
+  try ./configure --prefix=${INSTALL_PREFIX} --without-systemdsystemunitdir >/dev/null
   try make -j$(nproc) >/dev/null
+  try make install >/dev/null
 else
+  try ./configure --prefix=${INSTALL_PREFIX} --without-systemdsystemunitdir
   try make -j$(nproc)
+  try make install
 fi
+
 check_expected dbus/.libs/libdbus-1.so.3
 
 # ... then Common API DBus Runtime
@@ -202,9 +213,10 @@ check_expected libCommonAPI-DBus.so
 # Build Boost
 echo Building Boost
 cd "$BASEDIR" || fail
-try wget -c https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.gz
-try tar -xzf boost_1_64_0.tar.gz
-cd boost_1_64_0/
+try wget -c https://dl.bintray.com/boostorg/release/${BOOST_DL_DIR_VERSION}/source/boost_${BOOST_TAR_VERSION}.tar.gz
+try tar -xzf boost_${BOOST_TAR_VERSION}.tar.gz
+# OK, so it's now under boost_ and the version in the same way it is written in the *TAR* file
+cd boost_${BOOST_TAR_VERSION} || fail "Expected boost to be in $BOOST_TAR_VERSION/ after unpacking!"
 try ./bootstrap.sh
 BOOST_ROOT=`realpath $PWD/../install`
 mkdir -p $BOOST_ROOT
@@ -406,3 +418,7 @@ echo 'export LD_LIBRARY_PATH="$PWD/vsomeip/build:$LD_LIBRARY_PATH"'
 echo '(Please check the paths - $PWD will expand correctly if you are standing in the project directory)'
 echo 'Please refer to README.md for more information!!'
 
+cd "$BASEDIR" || fail
+echo "Checking a few results (were libraries compiled and installed?)"
+test -f install/lib/libboost_log.so|| fail "Could not find libboost_log.so in install/lib?  Something probably went wrong"
+test -f install/lib/libvsomeip.so  || fail "Could not find libvsomeip.so in install/lib?  Something probably went wrong"
