@@ -6,11 +6,13 @@ set(CMAKE_BUILD_TYPE Debug)
 
 include_directories(
     src-gen
-    ../capicxx-core-runtime/include
-    ../capicxx-dbus-runtime/include
-    ../capicxx-someip-runtime/include
+    ../install/include
+    ../install/include/CommonAPI-3.1
+    ../install/include/CommonAPI-3.1/DBus
+    ../install/include/CommonAPI-3.1/SomeIP
+    ../install/include/dbus-1.0
+    # A few header files seem to not be installed now - need to get them from the source directory.
     ../dbus-1.10.10
-    ../vsomeip/interface
 )
 
 # CMake needs the policy set to avoid warning about
@@ -20,11 +22,6 @@ include_directories(
 # - Gunnar
 cmake_policy(SET CMP0015 NEW)
 link_directories(
-    ../capicxx-core-runtime/build
-    ../capicxx-dbus-runtime/build
-    ../capicxx-someip-runtime/build
-    ../dbus-1.10.10/dbus/.libs
-    ../vsomeip/build
     ../install/lib
 )
 
@@ -59,3 +56,5 @@ add_executable(HelloWorldSomeIPService
 	src-gen/v1/commonapi/HelloWorldSomeIPDeployment.cpp
 )
 target_link_libraries(HelloWorldSomeIPService CommonAPI CommonAPI-SomeIP vsomeip)
+
+install(PROGRAMS HelloWorldSomeIPService DESTINATION ../install/bin/)
