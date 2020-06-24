@@ -90,19 +90,13 @@ done
 }
 
 check_os(){
-
-    result=`lsb_release -i`
-    # If lsb_release binary does not exist
-    if [ -z "$result" ] ; then
-       fgrep -qi fedora /etc/os-release && os=fedora
-       fgrep -qi ubuntu /etc/os-release && os=ubuntu
-       fgrep -qi centos /etc/os-release && os=centos
-       fgrep -qi debian /etc/os-release && os=debian
-       fgrep -qi apertis /etc/os-release && os=apertis
-    else
-      os=`echo $result |awk -F":" '{print $2}' |tr A-Z a-z`
-    fi
-
+    # From less specific to more specific.
+    fgrep -qi fedora /etc/os-release && os=fedora
+    fgrep -qi debian /etc/os-release && os=debian
+    fgrep -qi ubuntu /etc/os-release && os=ubuntu
+    fgrep -qi centos /etc/os-release && os=centos
+    fgrep -qi apertis /etc/os-release && os=apertis
+ 
     if [[ $os =~ "ubuntu" || $os =~ "debian" || $os =~ "apertis" || $os =~ "centos" || $os =~ "redhat" || $os =~ "fedora" ]] ; then
       echo "OK, recognized distro as $os ..."
     else
@@ -429,3 +423,4 @@ cd "$BASEDIR" || fail
 echo "Checking a few results (were libraries compiled and installed?)"
 test -f install/lib/libboost_log.so|| fail "Could not find libboost_log.so in install/lib?  Something probably went wrong"
 test -f install/lib/libvsomeip.so  || fail "Could not find libvsomeip.so in install/lib?  Something probably went wrong"
+
