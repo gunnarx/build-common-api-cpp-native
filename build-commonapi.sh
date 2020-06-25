@@ -68,7 +68,6 @@ fail() {
    echo $@
    echo "Halted, hit return to continue, or give up..."
    read x
-
 }
 
 git_clone() {
@@ -152,7 +151,10 @@ pause() {
 }
 
 install_prerequisites
-set -e
+
+# All artifacts are installed locally within the project tree:
+INSTALL_PREFIX="$BASEDIR/install"
+mkdir -p "$INSTALL_PREFIX"
 
 # Build Common API C++ Runtime
 echo Building CommonAPI Core Runtime
@@ -162,13 +164,16 @@ cd capicxx-core-runtime/ || fail
 git checkout $CORE_RUNTIME_VERSION || fail "capicxx-core: Failed git checkout of $CORE_RUNTIME_VERSION"
 mkdir -p build
 cd build/ || fail
-try cmake ..
+try cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} ..
 if $QUIET ; then
   try make -j$(nproc) >/dev/null
+  try make install >/dev/null
 else
   try make -j$(nproc)
+  try make install
 fi
 check_expected libCommonAPI.so
+check_expected "${INSTALL_PREFIX}/lib/libCommonAPI.so"
 
 # Build Common API C++ DBus Runtime
 echo Building D-Bus
@@ -194,6 +199,8 @@ else
 fi
 
 check_expected dbus/.libs/libdbus-1.so.3
+check_expected "${INSTALL_PREFIX}/lib/libdbus-1.so.3"
+check_expected "${INSTALL_PREFIX}/include/dbus-1.0"
 
 # ... then Common API DBus Runtime
 echo Building CommonAPI D-Bus Runtime
@@ -203,13 +210,16 @@ git checkout $DBUS_RUNTIME_VERSION || fail "capicxx-dbus: Failed git checkout of
 mkdir -p build
 cd build || fail
 export PKG_CONFIG_PATH="$BASEDIR/dbus-1.10.10"
-try cmake -DUSE_INSTALLED_COMMONAPI=OFF -DUSE_INSTALLED_DBUS=OFF ..
+try cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DUSE_INSTALLED_COMMONAPI=OFF -DUSE_INSTALLED_DBUS=OFF ..
 if $QUIET ; then
-  try make -j4 >/dev/null
+  try make -j$(nproc) >/dev/null
+  try make install >/dev/null
 else
-  try make -j4
+  try make -j$(nproc)
+  try make install
 fi
 check_expected libCommonAPI-DBus.so
+check_expected $BASEDIR/install/lib/libCommonAPI-DBus.so
 
 # Build Boost
 echo Building Boost
@@ -230,13 +240,14 @@ fi
 # Build vsomeip
 echo Building vsomeip
 cd "$BASEDIR" || fail
-VSOMEIP_INSTALL=`realpath $PWD/install`
+VSOMEIP_LIBS=`realpath $PWD/install/lib`
+VSOMEIP_INC=`realpath $PWD/install/include`
 git_clone https://github.com/GENIVI/vsomeip.git
 cd vsomeip
 git checkout $VSOMEIP_VERSION || fail "vsomeip: Failed git checkout of $VSOMEIP_VERSION"
 mkdir -p build
 cd build || fail
-try cmake -DCMAKE_INSTALL_PREFIX="$VSOMEIP_INSTALL" -DBOOST_ROOT=${BOOST_ROOT} -DENABLE_SIGNAL_HANDLING=1 ..
+try cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -DBOOST_ROOT=${BOOST_ROOT} -DENABLE_SIGNAL_HANDLING=1 ..
 if $QUIET ; then
   try make -j$(nproc) >/dev/null
   try make install >/dev/null
@@ -244,6 +255,7 @@ else
   try make -j$(nproc)
   try make install
 fi
+check_expected $BASEDIR/install/lib/libvsomeip.so
 
 # build SomeIP CommonAPI Runtime
 echo CommonAPI SOME/IP Runtime
@@ -253,13 +265,19 @@ cd capicxx-someip-runtime
 git checkout $SOMEIP_RUNTIME_VERSION || fail "capicxx-dbus: Failed git checkout of $SOMEIP_RUNTIME_VERSION"
 mkdir -p build
 cd build || fail
-try cmake -DBOOST_ROOT=${BOOST_ROOT} -DUSE_INSTALLED_COMMONAPI=OFF ..
-# build SomeIP CommonAPI Runtime
+try cmake -D BOOST_ROOT=${BOOST_ROOT} \
+	  -D CMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
+	  -D CMAKE_PREFIX_PATH=${INSTALL_PREFIX}/lib/cmake/ \
+	  -D CMAKE_MODULE_PATH=${INSTALL_PREFIX}/lib/cmake/ \
+	  -D USE_INSTALLED_COMMONAPI=ON ..
 if $QUIET ; then
   try make -j$(nproc) >/dev/null
+  try make install >/dev/null
 else
   try make -j$(nproc)
+  try make install
 fi
+check_expected $BASEDIR/install/lib/libCommonAPI-SomeIP.so
 
 # Create application
 echo Prepare application
@@ -305,6 +323,7 @@ try chmod +x ./commonapi_someip_generator/commonapi-someip-generator-linux-$ARCH
 #Generate Code
 echo Generating code from examples
 cd "$BASEDIR/project" || fail
+check_expected "$BASEDIR/project/fidl/HelloWorld.fidl"
 try ./cgen/commonapi-generator/commonapi-generator-linux-$ARCH -sk ./fidl/HelloWorld.fidl
 try ./cgen/commonapi_dbus_generator/commonapi-dbus-generator-linux-$ARCH ./fidl/HelloWorld.fidl
 try ./cgen/commonapi_someip_generator/commonapi-someip-generator-linux-$ARCH ./fidl/HelloWorld.fdepl
@@ -403,7 +422,7 @@ echo Compiling generated example code
 cd "$BASEDIR/project" || fail
 cd build || fail
 try cmake ..
-try make -j4
+try make -j$(nproc)
 
 # Your output should look similiar. In the build direcory there should be two executables now: HelloWorldClient and HelloWorldService.
 echo "For DBus HelloWorld"
