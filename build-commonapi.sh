@@ -279,14 +279,11 @@ else
 fi
 check_expected $BASEDIR/install/lib/libCommonAPI-SomeIP.so
 
-# Create application
-echo Prepare application
+echo Copying example FIDL files
 cd "$BASEDIR" || fail
-mkdir project
-cd project/ || fail
-mkdir fidl
-cp "$BASEDIR/examples/HelloWorld.fidl" fidl/
-cp "$BASEDIR/examples/HelloWorld.fdepl" fidl/
+mkdir -p project/fidl
+cp "$BASEDIR/examples/HelloWorld.fidl" project/fidl/  || fail
+cp "$BASEDIR/examples/HelloWorld.fdepl" project/fidl/  || fail
 
 # Ready! A service which instantiates the interface HelloWorld provides the
 # function sayHello which can be called. The next step is to generate code.
@@ -296,6 +293,7 @@ cp "$BASEDIR/examples/HelloWorld.fdepl" fidl/
 # Get Code Generators
 echo Downloading code generators
 cd "$BASEDIR/project" || fail
+try cp "$BASEDIR/examples/CMakeLists.txt" .
 mkdir -p cgen
 cd cgen/ || fail
 
@@ -412,17 +410,8 @@ try cp "$BASEDIR/examples/HelloWorldStubImpl.cpp" src/
 # is to write a simple CMake file. Create a new file CMakeLists.txt
 # directly in the project directory: CMakeLists.txt
 
-try cp "$BASEDIR/examples/CMakeLists.txt" .
-
 echo Compiling generated example code
-
-# As include paths we need the include directories of CommonAPI and bindings and D-Bus; the directory of the generated code must be also added. We link everything together and do not discuss here questions concerning the configuration with different bindings. Therefore we tell CMake where to find the CommonAPI libraries and libdbus (replace the absolute paths with the paths on your machine). At the end we build two executables, one for the service and one for the client.
-# Now call CMake (remember that we created the build directory before:
-# Build everything
-cd "$BASEDIR/project" || fail
-cd build || fail
-try cmake ..
-try make -j$(nproc)
+cmake_build project
 
 # Your output should look similiar. In the build direcory there should be two executables now: HelloWorldClient and HelloWorldService.
 echo "For DBus HelloWorld"
