@@ -51,6 +51,7 @@ which sudo >/dev/null
 if [ $? -ne 0 ] ; then
    if [ $(id -u) -ne 0 ] ; then
       fail "No sudo command exists in your system.  (You could install it (recommended) or run as root instead)"
+      return 1
    else
       # Running as root - define sudo as empty
       sudo=
@@ -150,11 +151,34 @@ pause() {
   fi
 }
 
-install_prerequisites
-
 # All artifacts are installed locally within the project tree:
 INSTALL_PREFIX="$BASEDIR/install"
 mkdir -p "$INSTALL_PREFIX"
+
+# Common standard cmake build steps
+cmake_build() {
+  local dir="$1" ; shift
+  cd "$BASEDIR/$dir" || fail "Directory mistake for building $dir"
+  rm -rf build
+  mkdir -p build
+  cd build/ || fail
+  # Common cmake step
+  try cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} $@  \
+        -D CMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
+        -D CMAKE_PREFIX_PATH=${INSTALL_PREFIX}/lib/cmake/ \
+        -D CMAKE_MODULE_PATH=${INSTALL_PREFIX}/lib/cmake/ \
+        ..
+
+  if $QUIET ; then
+    try make -j$(nproc) >/dev/null
+    try make install >/dev/null
+  else
+    try make -j$(nproc)
+    try make install
+  fi
+}
+
+install_prerequisites
 
 # Build Common API C++ Runtime
 echo Building CommonAPI Core Runtime
@@ -162,16 +186,7 @@ cd "$BASEDIR" || fail
 git_clone https://github.com/GENIVI/capicxx-core-runtime.git
 cd capicxx-core-runtime/ || fail
 git checkout $CORE_RUNTIME_VERSION || fail "capicxx-core: Failed git checkout of $CORE_RUNTIME_VERSION"
-mkdir -p build
-cd build/ || fail
-try cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} ..
-if $QUIET ; then
-  try make -j$(nproc) >/dev/null
-  try make install >/dev/null
-else
-  try make -j$(nproc)
-  try make install
-fi
+cmake_build capicxx-core-runtime
 check_expected libCommonAPI.so
 check_expected "${INSTALL_PREFIX}/lib/libCommonAPI.so"
 
@@ -207,17 +222,8 @@ echo Building CommonAPI D-Bus Runtime
 cd "$BASEDIR" || fail
 cd capicxx-dbus-runtime/ || fail
 git checkout $DBUS_RUNTIME_VERSION || fail "capicxx-dbus: Failed git checkout of $DBUS_RUNTIME_VERSION"
-mkdir -p build
-cd build || fail
 export PKG_CONFIG_PATH="$BASEDIR/dbus-1.10.10"
-try cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DUSE_INSTALLED_COMMONAPI=OFF -DUSE_INSTALLED_DBUS=OFF ..
-if $QUIET ; then
-  try make -j$(nproc) >/dev/null
-  try make install >/dev/null
-else
-  try make -j$(nproc)
-  try make install
-fi
+cmake_build capicxx-dbus-runtime -DUSE_INSTALLED_COMMONAPI=OFF -DUSE_INSTALLED_DBUS=OFF
 check_expected libCommonAPI-DBus.so
 check_expected $BASEDIR/install/lib/libCommonAPI-DBus.so
 
@@ -245,16 +251,7 @@ VSOMEIP_INC=`realpath $PWD/install/include`
 git_clone https://github.com/GENIVI/vsomeip.git
 cd vsomeip
 git checkout $VSOMEIP_VERSION || fail "vsomeip: Failed git checkout of $VSOMEIP_VERSION"
-mkdir -p build
-cd build || fail
-try cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -DBOOST_ROOT=${BOOST_ROOT} -DENABLE_SIGNAL_HANDLING=1 ..
-if $QUIET ; then
-  try make -j$(nproc) >/dev/null
-  try make install >/dev/null
-else
-  try make -j$(nproc)
-  try make install
-fi
+cmake_build vsomeip -DBOOST_ROOT=${BOOST_ROOT} -DENABLE_SIGNAL_HANDLING=1
 check_expected $BASEDIR/install/lib/libvsomeip.so
 
 # build SomeIP CommonAPI Runtime
@@ -263,20 +260,7 @@ cd "$BASEDIR" || fail
 git_clone https://github.com/GENIVI/capicxx-someip-runtime.git
 cd capicxx-someip-runtime
 git checkout $SOMEIP_RUNTIME_VERSION || fail "capicxx-dbus: Failed git checkout of $SOMEIP_RUNTIME_VERSION"
-mkdir -p build
-cd build || fail
-try cmake -D BOOST_ROOT=${BOOST_ROOT} \
-	  -D CMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
-	  -D CMAKE_PREFIX_PATH=${INSTALL_PREFIX}/lib/cmake/ \
-	  -D CMAKE_MODULE_PATH=${INSTALL_PREFIX}/lib/cmake/ \
-	  -D USE_INSTALLED_COMMONAPI=ON ..
-if $QUIET ; then
-  try make -j$(nproc) >/dev/null
-  try make install >/dev/null
-else
-  try make -j$(nproc)
-  try make install
-fi
+cmake_build capicxx-someip-runtime -DBOOST_ROOT=${BOOST_ROOT} -D USE_INSTALLED_COMMONAPI=ON
 check_expected $BASEDIR/install/lib/libCommonAPI-SomeIP.so
 
 echo Copying example FIDL files
