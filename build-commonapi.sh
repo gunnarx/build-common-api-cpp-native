@@ -150,6 +150,13 @@ apply_patch() {
 }
 
 echo Installing prerequisites
+pause() {
+  if [ -n "$PAUSE" ] ; then
+    echo "paused -- hit return"
+    read x
+  fi
+}
+
 install_prerequisites
 set -e
 
