@@ -35,6 +35,22 @@ if [ -n "$rmflag" ] ; then
   docker rm buildcapicxx
 fi
 
+echo "Running D-Bus tests"
+docker exec  -ti buildcapicxx bash -c "/workdir/test_dbus.sh"
+if [ $? -eq 0 ] ; then
+  echo "docker-exec: D-bus test run in container succeeded."
+else
+  echo "docker-exec: D-bus test, something failed"
+fi
+
+echo "Running SOME/IP tests"
+docker exec  -ti buildcapicxx bash -c "/workdir/test_someip.sh"
+if [ $? -eq 0 ] ; then
+  echo "docker-exec: SOME/IP test run in container succeeded."
+else
+  echo "docker-exec: SOME/IP test, something failed"
+fi
+
 echo "---"
-echo "Container build is now done.  To look at the results, find it among docker ps and then exec a shell in the container."
+echo "Container build is now done.  To look at the results, find it among docker ps (not running), start it and then exec a shell in the container."
 echo

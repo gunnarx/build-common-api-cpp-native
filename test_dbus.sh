@@ -26,25 +26,31 @@ server="$MYDIR/project/build/HelloWorldService"
 [ -x "$server" ] || { echo "$0 : Executable not found ($server)" ; exit 1 ; }
 
 stop_server() { kill $server_pid ;}
-success() { echo Success ; stop_server ; exit 0 ;}
+success() { echo TEST OK. ; stop_server ; exit 0 ;}
+
+export LD_LIBRARY_PATH="$MYDIR/install/lib:$LD_LIBRARY_PATH"
 
 # Run server
-$server &
+exec 4<> <($server)
 server_pid=$!
-echo server_pid=$server_pid
+echo "Testscript: Started server with PID=$server_pid"
 
 # Run client in background check for messages
-exec 3< <($client 2>/dev/null)
+exec 3<> <($client 2>&1) && echo "Testscript: Started client with PID=$!"
 
-# Give the process up to 3 seconds to succeed
-for x in 1 2 3 ; do
+# Give the process some time to succeed
+for x in 1 2 3 4 5 6 ; do
+   read -t 1 serveroutput <&4 
+   [ -n "$serveroutput" ] && echo "Server: $serveroutput"
+   echo "Testscript: Waiting to read, 1s"
    read -t 1 line <&3
-   echo "$line"
+   [ -n "$line" ] && echo "Client: $line"
    echo "$line" | egrep -q "Got message:.*Hello Bob" && success
 done
 
 # Timed out
-echo "HelloWorldClient failed sending/receiving"
-exit -1
+echo "TestScript:  FAILED.  It seems client failed sending/receiving"
+stop_server
+exit 1
 
 
