@@ -11,8 +11,6 @@ JAVA_PACKAGE=openjdk-8-jre
 
 echo This will run the script in a controlled docker container environment
 
-set -x
-
 set -e
 docker run -d -i --name=buildcapicxx $DISTRO
 docker exec buildcapicxx bash -c "apt-get update ; apt-get install -y git $JAVA_PACKAGE"

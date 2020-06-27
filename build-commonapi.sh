@@ -1,4 +1,4 @@
-#!/bin/bash -xe 
+#!/bin/bash -e
 
 # This script is based on the detailed instructions from GENIVI public wiki
 # written by Juergen Gehring.
