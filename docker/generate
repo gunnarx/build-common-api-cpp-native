@@ -1,0 +1,91 @@
+#!/bin/sh -e
+
+# KNOWN BUGS:
+# src-gen should really be relative to (each) given fidl file
+# instead it is created in the current directory
+
+# SETTINGS:
+
+# Running container name
+CTR=buildcapicxx
+
+# Temporary dir, inside container
+TMPDIR=/tmp/fidlgen.$$
+
+# HELPER FUNCTIONS:
+
+usage() {
+  echo "Usage: $0 <[core|dbus|someip> [.fidl/fdepl-files...]"
+  exit 1
+}
+
+# Show command that is being run to the user
+xcmd() {
+  echo "+ $@"
+  $@
+}
+
+is_srcfile_type() {
+  # Matches given suffix?
+  echo "$2" | grep -Pq "${1}\$"
+}
+
+#  MAIN
+
+if [ $# -lt 2 ] ; then
+  usage
+fi
+
+# Which code generator style?
+# => Where to find the right generator binary
+# => Which file types to use as input for generation
+variant=$1 ; shift
+case $variant in
+  core)
+    GENERATOR=commonapi-generator/commonapi-generator-linux-x86_64
+    SRCFILES=.fidl
+    ;;
+  dbus)
+    GENERATOR=commonapi_dbus_generator/commonapi-dbus-generator-linux-x86_64
+    SRCFILES=.fidl
+    ;;
+  someip)
+    GENERATOR=commonapi_someip_generator/commonapi-someip-generator-linux-x86_64
+    SRCFILES=.fdepl
+    ;;
+  *)
+    echo "Unknown/unsupported generator variant."
+    usage
+    ;;
+esac
+
+GENERATOR_PATH=/workdir/project/cgen/$GENERATOR
+
+# Since container is already expected to be running, we can't use
+# bind mounts to make host .fidl files available in container.
+# so we copy them in, and copy out the result.
+
+
+echo "Copying input files into container"
+docker exec $CTR mkdir -p $TMPDIR
+for f in $@ ; do
+  xcmd docker cp "$f" $CTR:$TMPDIR/
+done
+
+docker exec $CTR ls -l $TMPDIR/
+
+echo "Running code generation:"
+for f in $@ ; do
+  filename="$(basename "$f")"
+  path="$TMPDIR/$filename"
+  if is_srcfile_type $SRCFILES $filename ; then
+    xcmd docker exec --workdir $TMPDIR -t $CTR $GENERATOR_PATH "$path"
+  fi
+done
+
+mkdir -p ./src-gen
+xcmd docker cp $CTR:$TMPDIR/src-gen .
+echo
+echo "DONE! (check for any errors)"
+echo "Results should now be visible in src-gen/"
+
