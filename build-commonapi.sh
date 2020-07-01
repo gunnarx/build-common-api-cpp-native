@@ -124,8 +124,8 @@ install_prerequisites() {
   apt-get -v >/dev/null 2>&1 && apt=true || apt=false
 
   if [ ! -f .installed_packages ] ; then
-    $dnf && $sudo dnf install -y unzip java-1.8.0-openjdk openjdk git make jexpat-devel cmake gcc gcc-c++ automake autoconf wget pkg-config
-    $yum && $sudo yum install -y unzip java-1.8.0-openjdk openjdk git make jexpat-devel cmake gcc gcc-c++ automake autoconf wget pkg-config
+    $dnf && $sudo dnf install -y unzip java-1.8.0-openjdk git make expat-devel cmake gcc gcc-c++ automake autoconf wget pkg-config
+    $yum && $sudo yum install -y unzip java-1.8.0-openjdk git make expat-devel cmake gcc gcc-c++ automake autoconf wget pkg-config
     $apt && $sudo apt-get update && apt-get install -y unzip openjdk-8-jre git make libexpat1-dev cmake gcc g++ automake autoconf wget pkg-config
   fi
   touch .installed_packages
