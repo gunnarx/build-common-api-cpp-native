@@ -1,21 +1,19 @@
-language: c++
+services:
+  - 'docker'
 
-dist: xenial
+# Language set to shell is supposedly a minimal travis base container
+# (avoid various language # support)?
+language: shell
+
+dist: bionic
 
 env:
   - QUIET=true
 
-jdk:
-  - openjdk8
-
 script:
-  - java -version
-  - sudo xvfb-run -e ERRORS ./build-commonapi.sh
-  - cat ERRORS
-  - ./test_someip.sh
-    # Test D-Bus is known to fail currently.  Just run it for completeness
-    # but don't fail Travis job because of it:
-  - ./test_dbus.sh || true
+  - cd docker
+  # Temporary : Avoid most of the log because it overflows the Travis maximum
+  - docker build --tag buildcapicxx . | tail -1000
 
-# Installed by script but could be added here perhaps
-# unzip openjdk-8-jre git make libexpat1-dev cmake gcc g++ automake autoconf wget pkg-config
+after_success:
+  - echo "PLACEHOLDER push finished docker image"
